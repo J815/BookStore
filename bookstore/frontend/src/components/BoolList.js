@@ -1,14 +1,22 @@
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 
-export const BookList= () =>{
-    const books= [
-        { id : 1, title: 'book1', author: 'author1'},
-        { id : 2, title: 'book2', author: 'author2'},
-        { id : 3, title: 'book3', author: 'author3'},
-        { id : 4, title: 'book4', author: 'author4'},
-        { id : 5, title: 'book5', author: 'author5'}
-    ];
-    return (
+
+export const BookList = () => {
+  const [books, setBooks] = useState([]);
+
+  useEffect(() => {
+    fetchBooks();
+  }, []);
+
+  const fetchBooks = async () => {
+    try {
+      const booksData = await getBooks();
+      setBooks(booksData);
+    } catch (error) {
+      console.error('Error fetching books:', error);
+    }
+  };
+  return (
         <div>
             <h2 style={{ padding: '30px'}}>Available Books</h2>
             <ul style={{ display: 'flex'}}>
