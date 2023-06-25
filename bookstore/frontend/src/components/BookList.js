@@ -1,8 +1,9 @@
-// import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import axios from 'axios';
+import '../index.css'
 
 export const BookList = () => {
-  // const [books, setBooks] = useState([]);
+  const [books, setBooks] = useState([]);
   const handleAddToCart = async (bookId) => {
     try {
       const response = await axios.post('http://localhost:8000/api/add-to-cart/', {
@@ -15,36 +16,31 @@ export const BookList = () => {
     }
     };
 
-  // useEffect(() => {
-  //   fetchBooks();
-  // }, []);
+  useEffect(() => {
+    fetchBooks();
+  }, []);
 
-  // const fetchBooks = async () => {
-  //   try {
-  //     const booksData = await axios.get('/api/books/');
-  //     setBooks(booksData.data);
-  //   } catch (error) {
-  //     console.error('Error fetching books:', error);
-  //   }
-  // };
-   const books=[
-    {id:1 ,title: 'b1', author: 'a1', price: 10},
-    {id:2 ,title: 'b2', author: 'a2', price: 100},
-    {id:12 ,title: 'b3', author: 'a1', price: 110},
-    {id:15 ,title: 'b16', author: 'a15', price: 130},
-   ];
+  const fetchBooks = async () => {
+    try {
+      const booksData = await axios.get('http://localhost:8000/api/books/');
+      console.log(booksData)
+      setBooks(booksData.data);
+    } catch (error) {
+      console.error('Error fetching books:', error);
+    }
+  };
 
   return (
-        <div>
-            <ul style={{ display: 'flex'}}>
+        <div className='all-book'>
+            <ul className='book-list'>
                 {books.map((book)=> (
-                    <div key={book.id} style={{ height:'180px', width:'130px', border:'1px solid #ccc', padding: '10px', marginRight: '10px', marginBottom: '10px', borderRadius: '5px' }}>
-                        <div style={{ height: '80px'}}>{"#image"}</div>
-                       <div>{"book serial - "+ book.id}</div>
-                        <div> {book.title} </div>
-                         <div>{book.author}</div>
-                         <div>{book.price}</div>
-                         <button onClick={() => handleAddToCart(book.id)}>Add to Cart</button>
+                    <div key={book.id} className='book-item'>
+                        <div className='book-image'>{"#image"}</div>
+                       <div className='book-serial'>{"book serial - "+ book.id}</div>
+                        <div className='book-title'> {"name : " +book.title} </div>
+                         <div className='book-author'>{"author : "+book.author}</div>
+                         <div className='book-price'>{"price : "+book.price}</div>
+                         <button className='add-to-cart-button' onClick={() => handleAddToCart(book.id)}>Add to Cart</button>
                     </div>
                 ))}
             </ul>

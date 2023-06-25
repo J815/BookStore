@@ -1,16 +1,16 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import axios from 'axios';
-// import './ShoppingCart.css';
+import '../index.css';
+
+axios.defaults.xsrfCookieName = 'csrftoken';
+axios.defaults.xsrfHeaderName = 'X-CSRFToken';
   
 export const Cart = () => {
   const [cartItems, setCartItems] = useState([]);
   const [totalAmount, setTotalAmount] = useState(0);
 
-  useEffect(() => {
-    fetchCartItems();
-  });
 
-  const fetchCartItems = async () => {
+  const fetchCartItems = useCallback(async()  => {
     try {
       const response = await axios.get('http://localhost:8000/api/cart-items/');
       setCartItems(response.data);
@@ -18,24 +18,27 @@ export const Cart = () => {
     } catch (error) {
       console.error(error);
     }
-  };
+  },[]);
+  useEffect(() => {
+    fetchCartItems();
+  },[fetchCartItems]);
+
   
 
-  const handleRemoveFromCart = async (bookId) => {
+  const handleRemoveFromCart = async (itemId,event) => {
+    event.preventDefault();
     try {
-      const response = await axios.post('http://localhost:8000/api/remove-from-cart/', {
-        book_id: bookId,
-      });
-      console.log(response.data);
+      await axios.delete(`http://localhost:8000/api/remove-from-cart/${itemId}/`);
       fetchCartItems();
     } catch (error) {
       console.error(error);
     }
   };
 
-  const handleQuantityChange = async (cartItemId, newQuantity) => {
+  const handleQuantityChange = async (cartItemId, newQuantity,event) => {
+    event.preventDefault();
     try {
-      const response = await axios.post('http://localhost:8000/api/update-cart-item/', {
+      const response = await axios.put(`http://localhost:8000/api/cart-items/${cartItemId}/`, {
         cart_item_id: cartItemId,
         quantity: newQuantity,
       });
@@ -46,9 +49,27 @@ export const Cart = () => {
     }
   };
 
+  const handleCheckout = async (event) => {
+    event.preventDefault();
+    try {
+      await axios.delete('http://localhost:8000/api/clear-cart/');
+      fetchCartItems(); // Refetch cart items after successful deletion
+    } catch (error) {
+      console.error(error);
+    }
+  };
+  const renderCheckoutButton = () => {
+    if (cartItems.length === 0) {
+      return null; // Hide the button if cart is empty
+    }
+
+    return <div><h3>Total Amount: ${totalAmount}</h3><button className="quantity-btn" onClick={(e) => handleCheckout(e)}>Checkout</button></div>;
+  };
+
+
   const calculateTotalAmount = (items) => {
     let total = 0;
-    items.forEach((item) => {
+    items?.forEach((item) => {
       total += item.book.price * item.quantity;
     });
     setTotalAmount(total);
@@ -57,7 +78,7 @@ export const Cart = () => {
   return (
     <form className="shopping-cart">
       <h2>Shopping Cart</h2>
-      {cartItems.map((item) => (
+      {cartItems?.map((item) => (
         <div key={item.book.id} className="cart-item">
           <div>
             <h4>{item.book.title}</h4>
@@ -66,27 +87,27 @@ export const Cart = () => {
           <div>
             <button
               className="quantity-btn"
-              onClick={() => handleQuantityChange(item.id, item.quantity - 1)}
+              onClick={(e) => handleQuantityChange(item.id, item.quantity - 1,e)}
             >
               -
             </button>
             <span className="quantity">{item.quantity}</span>
             <button
               className="quantity-btn"
-              onClick={() => handleQuantityChange(item.id, item.quantity + 1)}
+              onClick={(e) => handleQuantityChange(item.id, item.quantity + 1,e)}
             >
               +
             </button>
             <button
               className="remove-btn"
-              onClick={() => handleRemoveFromCart(item.id)}
+              onClick={(e) => handleRemoveFromCart(item.id,e)}
             >
               Remove
             </button>
           </div>
         </div>
       ))}
-      <h3>Total Amount: ${totalAmount}</h3>
+      {renderCheckoutButton()}
     </form>
   );
 };
